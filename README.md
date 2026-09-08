@@ -49,8 +49,8 @@ Projeto integrador 6. Desenvolvimento de plataforma para votação / gestão.
 - [x] Criar repositório no GitHub
 - [x] Adicionar licença MIT
 - [x] Configurar README inicial
-- [ ] Estrutura mínima do FastAPI (`main.py`, `requirements.txt`)
-- [ ] Implementar rotas de autenticação (login/cadastro)
+- [x] Estrutura mínima do FastAPI (`main.py`, `requirements.txt`)
+- [x] Implementar rotas de autenticação (login/cadastro)
 - [ ] Implementar rotas de alunos (listar/cadastrar)
 - [ ] Implementar rotas de candidatos (listar/cadastrar)
 - [ ] Implementar rotas de votação (registrar voto/apuração)
