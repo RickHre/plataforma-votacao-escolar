@@ -19,7 +19,10 @@ Projeto integrador: desenvolvimento de uma plataforma escolar para votação de 
 - Cadastro de candidatos (professor)  
 - Registro de votos (aluno)  
 - Apuração e resultados em tempo real  
-- Dashboard com estatísticas  
+- Dashboard com estatísticas
+
+![Telas_1](images/telas.png)
+![Arquitetura](images/arquitetura.png)
 
 ## 🚀 Como rodar localmente
 1. Clone o repositório:

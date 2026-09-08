@@ -34,7 +34,10 @@
 1. Cadastro de usuário:
    ```json
    { "username": "carlos", "password": "123", "role": "professor" }
+   ![Cadastro de Usuário](images/cadastro.png)
+
    ```
 2. Login:
    ```json
    { "username": "carlos", "password": "123", "role": "professor" }
+   ![Login](images/login.png)
