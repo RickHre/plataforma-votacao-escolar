@@ -21,8 +21,9 @@ Projeto integrador: desenvolvimento de uma plataforma escolar para votação de 
 - Apuração e resultados em tempo real  
 - Dashboard com estatísticas
 
-![Telas_1](images/telas.png)
-![Arquitetura](images/arquitetura.png)
+![Telas_1](app/docs/images/telas.png)
+
+![Arquitetura](app/docs/images/arquitetura.png)
 
 ## 🚀 Como rodar localmente
 1. Clone o repositório:
