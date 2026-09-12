@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: votacao_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./votacao_escolar.db:/app/votacao_escolar.db
+    restart: always
+
+  frontend:
+    build: ./web
+    container_name: votacao_frontend
+    ports:
+      # - "80:80"
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: always
