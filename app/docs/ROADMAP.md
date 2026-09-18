@@ -5,7 +5,7 @@
 - [x] Configurar README inicial
 - [x] Estrutura mínima do FastAPI (`main.py`, `requirements.txt`)
 - [x] Implementar rotas de autenticação (login/cadastro)
-- [ ] Implementar rotas de alunos (listar/cadastrar)
+- [x] Implementar rotas de alunos (listar/cadastrar)
 - [ ] Implementar rotas de candidatos (listar/cadastrar)
 - [ ] Implementar rotas de votação (registrar voto/apuração)
 - [ ] Criar dashboard para professores
