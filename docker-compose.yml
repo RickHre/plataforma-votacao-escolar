@@ -1,14 +1,17 @@
-version: '3.8'
-
 services:
   backend:
     build: .
     container_name: votacao_backend
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:////data/votacao_escolar.db
+      SECRET: ultra-secret-and-secure-key
     volumes:
-      - ./votacao_escolar.db:/app/votacao_escolar.db
-    restart: always
+      - ./app:/app/app:Z
+      - ./data:/data:Z
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build: ./web

@@ -1,0 +1,9 @@
+.git
+data
+*.db
+web
+docs
+__pycache__
+*.pyc
+.venv
+.env
