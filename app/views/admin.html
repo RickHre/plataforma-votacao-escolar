@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pequenos Cidadãos | Painel do professor</title>
+<style>
+:root{
+  --blue:#1557a6; --blue2:#2f80d8; --green:#16a765; --green2:#dff8eb;
+  --red:#d64545; --red2:#fdeeee; --ink:#18324d; --muted:#66809a;
+  --line:#dce8f2; --bg:#f4f9fd; --shadow:0 12px 32px rgba(22,72,115,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);
+  background:linear-gradient(135deg,#edf8ff 0%,#fffaf0 100%);min-height:100vh}
+button,input,select{font:inherit}
+.wrap{max-width:1100px;margin:auto;padding:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border-radius:14px;background:var(--blue);display:grid;place-items:center;color:#fff;font-size:24px;box-shadow:var(--shadow)}
+.brand h1{margin:0;font-size:22px;color:var(--blue)}
+.brand p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.userbox{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow:auto;margin-bottom:16px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 18px;border-radius:12px;cursor:pointer;font-weight:700;white-space:nowrap}
+.tab:hover{background:#f2f8fd}
+.tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:26px}
+.card h2{margin:0 0 4px;font-size:26px;color:var(--blue)}
+.card h3{margin:26px 0 10px;font-size:17px}
+.sub{margin:0 0 20px;color:var(--muted);font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}
+.stat{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fbfdff}
+.stat b{display:block;font-size:34px;color:var(--blue)}
+.stat span{color:var(--muted);font-size:14px}
+.form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;margin-bottom:22px}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px}
+.field label{font-size:13px;font-weight:700;color:var(--muted)}
+.field input,.field select{padding:11px 12px;border:2px solid var(--line);border-radius:10px;color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue2)}
+.hint{width:100%;margin:0;font-size:13px;color:var(--muted)}
+.btn{border:0;border-radius:10px;padding:11px 20px;font-weight:800;cursor:pointer;transition:.15s}
+.btn:hover{transform:translateY(-1px)}
+.primary{background:var(--green);color:#fff}
+.secondary{background:#edf3f8;color:var(--ink)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{background:#f2f8fd;color:var(--muted);text-align:left;font-size:13px;padding:11px 14px}
+td{padding:12px 14px;border-top:1px solid var(--line)}
+td.empty{text-align:center;color:var(--muted);padding:26px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:800;background:#e8eef3;color:#4d6680}
+.badge.aberta{background:var(--green2);color:#0f7d4b}
+.bar{height:14px;background:#e8eef3;border-radius:20px;overflow:hidden;min-width:120px}
+.fill{height:100%;background:var(--blue2);border-radius:20px}
+.center{text-align:center;padding:40px 10px;color:var(--muted)}
+.login{max-width:400px;margin:70px auto;text-align:center}
+.login .logo{margin:0 auto 14px}
+.login .field{margin-bottom:12px;text-align:left}
+.login .btn{width:100%;margin-top:6px}
+.error{background:var(--red2);color:#a63b3b;border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:14px}
+.toast{position:fixed;right:20px;bottom:20px;padding:13px 18px;border-radius:12px;color:#fff;font-weight:700;box-shadow:var(--shadow);background:var(--green);opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+.toast.err{background:var(--red)}
+@media(max-width:700px){.stats{grid-template-columns:1fr}.wrap{padding:12px}.card{padding:18px}.topbar{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+	<div class="wrap" id="root"></div>
+	<div class="toast" id="toast"></div>
+<script>
+// Mesma origem do backend.
+const API_URL = "";
+
+let token = sessionStorage.getItem("token");
+let me = null;
+let currentTab = "resumo";
+
+const root = document.getElementById("root");
+
+function esc(v){
+  return String(v ?? "—")
+		.replace(/&/g,"&amp;")
+		.replace(/</g,"&lt;")
+		.replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+		.replace(/'/g,"&#39;");
+}
+async function api(path, options = {}) {
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const init = { method: options.method || "GET", headers };
+  if (options.form) init.body = new URLSearchParams(options.form);
+  if (options.json){
+    headers["Content-Type"] = "application/json";
+    init.body = JSON.stringify(options.json);
+  }
+
+  let res;
+  try{
+    res = await fetch(API_URL + path, init);
+  }catch(e){
+    const err = new Error("Não foi possível conectar ao servidor.");
+    err.status = 0; throw err;
+  }
+
+  let data = null;
+  try{ data = await res.json(); }catch(e){}
+
+  if (!res.ok){
+    let msg = "Erro ao comunicar com o servidor.";
+    if (data && typeof data.detail === "string") msg = data.detail;
+    else if (data && Array.isArray(data.detail)) msg = "Dados inválidos: confira os campos preenchidos.";
+    const err = new Error(msg);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+let toastTimer;
+function toast(message, isError = false) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.className = "toast show" + (isError ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+}
+function fail(err) {
+  if (err.status === 401) {
+    logout("Sua sessão expirou. Entre novamente.");
+    return;
+  }
+  toast(err.message, true);
+}
+function table(headers, rows) {
+  return `
+    <div class="table-wrap"><table>
+      <thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+      <tbody>
+        ${rows.length
+          ? rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")
+          : `<tr><td class="empty" colspan="${headers.length}">Nenhum registro ainda.</td></tr>`}
+      </tbody>
+    </table></div>`;
+}
+function statusBadge(status) {
+  const s = status ?? "—";
+  return `<span class="badge ${s === "aberta" ? "aberta" : ""}">${esc(s)}</span>`;
+}
+function renderLogin(message) {
+  root.innerHTML = `
+    <div class="card login">
+      <div class="logo">🗳️</div>
+      <h2>Painel do professor</h2>
+      <p class="sub">Entre para consultar e cadastrar registros.</p>
+      ${message ? `<div class="error">${esc(message)}</div>` : ""}
+      <div class="field"><label for="u">Usuário</label>
+        <input id="u" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="field"><label for="p">Senha</label>
+        <input id="p" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn primary" onclick="doLogin()">Entrar</button>
+    </div>`;
+  document.getElementById("u").focus();
+}
+async function doLogin() {
+  const username = document.getElementById("u").value.trim();
+  const password = document.getElementById("p").value;
+  if (!username || !password){ renderLogin("Preencha usuário e senha."); return; }
+
+  try {
+    const data = await api("/auth/login", { method: "POST", form: { username, password } });
+    token = data.access_token;
+    sessionStorage.setItem("token", token);
+
+    me = await api("/auth/me");
+    if (me.role !== "professor"){
+      logout("Apenas professores podem acessar este painel.");
+      return;
+    }
+    renderPanel();
+  } catch(err) {
+    token = null; me = null;
+    sessionStorage.removeItem("token");
+    renderLogin(err.message);
+  }
+}
+function logout(message){
+  token = null; me = null;
+  sessionStorage.removeItem("token");
+  renderLogin(message);
+}
+
+const TABS = [
+  ["resumo", "Resumo"],
+  ["alunos", "Alunos"],
+  ["candidatos", "Candidatos"],
+  ["eleicoes", "Eleições"],
+  ["resultados", "Resultados"]
+];
+
+function renderPanel() {
+  root.innerHTML = `
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🗳️</div>
+        <div><h1>Pequenos Cidadãos</h1><p>Painel do professor</p></div>
+      </div>
+      <div class="userbox">
+        <span>👤 ${esc(me.username)}</span>
+        <button class="btn secondary" onclick="logout()">Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      ${TABS.map(([id, label]) =>
+        `<button class="tab" data-tab="${id}" onclick="show('${id}')">${label}</button>`).join("")}
+    </nav>
+    <section class="card" id="view"></section>`;
+  show(currentTab);
+}
+
+const loaders = {
+  resumo: loadResumo,
+  alunos: loadAlunos,
+  candidatos: loadCandidatos,
+  eleicoes: loadEleicoes,
+  resultados: loadResultados
+};
+
+async function show(tab) {
+  currentTab = tab;
+  document.querySelectorAll(".tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.tab === tab));
+
+  const view = document.getElementById("view");
+  view.innerHTML = `<div class="center">Carregando…</div>`;
+
+  try{
+    const html = await loaders[tab]();
+    if (currentTab === tab) view.innerHTML = html;
+  }catch(err){
+    if (err.status === 401){ logout("Sua sessão expirou. Entre novamente."); return; }
+    if (currentTab === tab){
+      view.innerHTML = `<div class="center">❗ ${esc(err.message)}<br><br>
+        <button class="btn secondary" onclick="show('${tab}')">Tentar novamente</button></div>`;
+    }
+  }
+}
+async function loadResumo() {
+  const d = await api("/dashboard/");
+  return `
+    <h2>Resumo</h2>
+    <p class="sub">Visão geral das atividades.</p>
+    <div class="stats">
+      <div class="stat"><b>${esc(d.total_alunos)}</b><span>Alunos</span></div>
+      <div class="stat"><b>${esc(d.total_candidatos)}</b><span>Candidatos</span></div>
+      <div class="stat"><b>${esc(d.total_eleicoes)}</b><span>Eleições</span></div>
+    </div>
+    <h3>Votos por eleição</h3>
+    ${table(["Eleição", "Status", "Total de votos"],
+      d.resultados.map(r => [esc(r.eleicao), statusBadge(r.status), esc(r.total_votos)]))}`;
+}
+async function loadAlunos() {
+  const list = await api("/students/");
+  return `
+    <h2>Alunos</h2>
+    <p class="sub">Cadastre novos usuários e consulte os alunos existentes.</p>
+    <form class="form" onsubmit="addUser(event)">
+      <div class="field"><label>Usuário</label><input name="username" required></div>
+      <div class="field"><label>Senha</label><input name="password" type="password" required></div>
+      <div class="field"><label>Tipo</label>
+        <select name="role"><option value="aluno">Aluno</option><option value="professor">Professor</option></select>
+      </div>
+      <button class="btn primary" type="submit">Cadastrar</button>
+      <p class="hint">A lista abaixo mostra apenas alunos. Professores cadastrados não aparecem aqui.</p>
+    </form>
+    ${table(["ID", "Usuário", "Tipo"],
+      list.map(u => [esc(u.id), esc(u.username), esc(u.role)]))}`;
+}
+async function addUser(e) {
+  e.preventDefault();
+  const f = e.target;
+  try{
+    await api("/auth/register", { method: "POST", json: {
+      username: f.username.value.trim(),
+      password: f.password.value,
+      role: f.role.value
+    }});
+    toast("Usuário cadastrado!");
+    show("alunos");
+  }catch(err){ fail(err); }
+}
+async function loadCandidatos() {
+  const list = await api("/candidates/");
+  return `
+    <h2>Candidatos</h2>
+    <p class="sub">Opções que aparecem na urna, na ordem em que foram cadastradas.</p>
+    <form class="form" onsubmit="addCandidate(event)">
+      <div class="field"><label>Nome</label><input name="name" required></div>
+      <div class="field"><label>Turma</label><input name="turma" required></div>
+      <button class="btn primary" type="submit">Cadastrar</button>
+      <p class="hint">As urnas mostram no máximo 9 candidatos (teclas 1 a 9).</p>
+    </form>
+    ${table(["ID", "Nome", "Turma"],
+      list.map(c => [esc(c.id), esc(c.name), esc(c.turma)]))}`;
+}
+async function addCandidate(e) {
+  e.preventDefault();
+  const f = e.target;
+  try{
+    await api("/candidates/", { method: "POST", json: {
+      name: f.name.value.trim(),
+      turma: f.turma.value.trim()
+    }});
+    toast("Candidato cadastrado!");
+    show("candidatos");
+  }catch(err){ fail(err); }
+}
+async function loadEleicoes() {
+  const list = await api("/elections/");
+  return `
+    <h2>Eleições</h2>
+    <p class="sub">Crie votações e acompanhe o status de cada uma.</p>
+    <form class="form" onsubmit="addElection(event)">
+      <div class="field"><label>Título</label><input name="title" required></div>
+      <button class="btn primary" type="submit">Criar eleição</button>
+    </form>
+    ${table(["ID", "Título", "Status"],
+      list.map(el => [esc(el.id), esc(el.title), statusBadge(el.status)]))}`;
+}
+async function addElection(e) {
+  e.preventDefault();
+  const f = e.target;
+  try{
+    await api("/elections/", { method: "POST", json: { title: f.title.value.trim() } });
+    toast("Eleição criada!");
+    show("eleicoes");
+  }catch(err){ fail(err); }
+}
+async function loadResultados() {
+  const elections = await api("/elections/");
+  if (!elections.length){
+    return `<h2>Resultados</h2><p class="sub">Apuração de votos por eleição.</p>
+            <div class="center">Nenhuma eleição criada ainda.</div>`;
+  }
+
+  // Seleciona a eleição aberta (ou a mais recente) por padrão
+  const def = elections.find(e => e.status === "aberta") || elections[elections.length - 1];
+
+  // Carrega o resultado depois de montar a tela
+  setTimeout(() => loadResult(def.id), 0);
+
+  return `
+    <h2>Resultados</h2>
+    <p class="sub">Apuração de votos por eleição.</p>
+    <div class="form">
+      <div class="field"><label>Eleição</label>
+        <select id="electionSelect" onchange="loadResult(this.value)">
+          ${elections.map(e =>
+            `<option value="${esc(e.id)}" ${e.id === def.id ? "selected" : ""}>${esc(e.title)}</option>`).join("")}
+        </select>
+      </div>
+      <button class="btn secondary" type="button"
+              onclick="loadResult(document.getElementById('electionSelect').value)">Atualizar</button>
+    </div>
+    <div id="resultBox"><div class="center">Carregando…</div></div>`;
+}
+async function loadResult(id) {
+  const box = document.getElementById("resultBox");
+  if (!box) return;
+  box.innerHTML = `<div class="center">Carregando…</div>`;
+
+  try{
+    const data = await api(`/votes/results/${encodeURIComponent(id)}`);
+    const blank = data.branco || 0;
+    const total = data.results.reduce((s, r) => s + r.total_votos, 0) + blank;
+    const pct = v => total ? Math.round(v / total * 100) : 0;
+
+    const rows = data.results.map(r => [
+      esc(r.name),
+      esc(r.total_votos),
+      `<div class="bar"><div class="fill" style="width:${pct(r.total_votos)}%"></div></div>`,
+      `${pct(r.total_votos)}%`
+    ]);
+    if (data.branco !== undefined){
+      rows.push(["⚪ Branco", esc(blank),
+        `<div class="bar"><div class="fill" style="width:${pct(blank)}%"></div></div>`, `${pct(blank)}%`]);
+    }
+
+    box.innerHTML = `
+      <p class="sub"><b>${esc(data.election)}</b> • ${statusBadge(data.status)} • ${total} voto(s)</p>
+      ${table(["Candidato", "Votos", "", "%"], rows)}`;
+  }catch(err){
+    if (err.status === 401){ logout("Sua sessão expirou. Entre novamente."); return; }
+    box.innerHTML = `<div class="center">❗ ${esc(err.message)}</div>`;
+  }
+}
+async function init() {
+  if (!token){ renderLogin(); return; }
+  try{
+    me = await api("/auth/me");
+    if (me.role !== "professor"){ logout("Apenas professores podem acessar este painel."); return; }
+    renderPanel();
+  }catch(err){
+    logout();
+  }
+}
+document.addEventListener("DOMContentLoaded", () => {
+	init();
+});
+</script>
+</body>
+</html>
