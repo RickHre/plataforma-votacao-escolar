@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Urna Eletrônica Infantil</title>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; min-height: 100vh; background: linear-gradient(135deg, #eaf6ff, #fff8e7); display: flex; justify-content: center; align-items: center; padding: 25px; color: #173b68; }
+        .app { width: 100%; max-width: 1100px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 34px; color: #164d91; margin-bottom: 6px; }
+        .header p { color: #54708f; font-size: 17px; }
+        .urna { background: #f8fafc; border-radius: 28px; padding: 30px; box-shadow: 0 20px 50px rgba(25, 71, 110, 0.18), inset 0 0 0 2px #dce7f1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 28px; }
+        .screen-container { background: #dfe7ee; border-radius: 22px; padding: 18px; }
+        .screen { min-height: 470px; background: white; border-radius: 15px; padding: 28px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,.06); }
+        .screen h2 { font-size: 30px; margin-bottom: 12px; color: #164d91; }
+        .screen p { font-size: 18px; color: #536b83; margin-bottom: 20px; }
+        .welcome-icon { font-size: 90px; margin-bottom: 15px; }
+        .start-button { border: none; background: #16a765; color: white; font-size: 20px; font-weight: bold; padding: 16px 45px; border-radius: 14px; cursor: pointer; transition: .2s; }
+        .start-button:hover { transform: scale(1.04); background: #128d56; }
+        .candidates { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
+        .candidate { border: 3px solid #dce7f1; background: #fff; border-radius: 18px; padding: 15px; cursor: pointer; transition: .2s; }
+        .candidate:hover { transform: translateY(-3px); border-color: #4d9de0; box-shadow: 0 5px 15px rgba(0,0,0,.08); }
+        .candidate.selected { border-color: #16a765; background: #ecfff5; }
+        .animal { font-size: 55px; }
+        .candidate-name { font-size: 20px; font-weight: bold; margin-top: 5px; }
+        .number { display: inline-block; margin-top: 7px; background: #164d91; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
+        .keyboard { background: #202936; border-radius: 22px; padding: 25px; display: flex; flex-direction: column; justify-content: center; }
+        .keyboard-title { color: white; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 18px; }
+        .number-display { height: 60px; background: #fff; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; font-size: 30px; font-weight: bold; color: #172331; }
+        .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .key { border: none; border-radius: 10px; min-height: 58px; font-size: 22px; font-weight: bold; cursor: pointer; background: #f5f7fa; color: #202936; transition: .15s; }
+        .key:hover { background: #dce7f1; }
+        .key:active { transform: scale(.95); }
+        .key.blank { background: #fff; font-size: 14px; }
+        .key.correct { background: #ef7d32; color: white; font-size: 14px; }
+        .key.confirm { background: #16a765; color: white; font-size: 14px; }
+        .accessibility { margin-top: 18px; padding: 12px; background: #354354; border-radius: 12px; color: white; text-align: center; }
+        .audio-button { width: 100%; border: none; margin-top: 8px; padding: 12px; border-radius: 8px; cursor: pointer; background: #4d9de0; color: white; font-weight: bold; }
+        .actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .action-button { border: none; padding: 13px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .confirm { background: #16a765; color: white; }
+        .back { background: #e5eaf0; color: #173b68; }
+        .result { width: 100%; }
+        .result-item { margin: 12px 0; }
+        .result-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; }
+        .bar { width: 100%; height: 25px; background: #e8edf2; border-radius: 20px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 20px; background: #4d9de0; transition: width 1s; }
+        .success { font-size: 80px; color: #16a765; }
+        .footer { text-align: center; margin-top: 18px; color: #657b91; font-size: 14px; }
+        .login-input { width: 100%; max-width: 320px; padding: 14px; margin-bottom: 12px; font-size: 18px; border: 2px solid #dce7f1; border-radius: 12px; color: #173b68; }
+        .login-input:focus { outline: none; border-color: #4d9de0; }
+        .login-error { color: #c0392b !important; font-weight: bold; }
+        @media (max-width: 800px) { .urna { grid-template-columns: 1fr; } .screen { min-height: 500px; } }
+				@media (max-width: 500px) { body { padding: 10px; } .urna { padding: 15px; } .candidates { grid-template-columns: 1fr; } .header h1 { font-size: 27px; } }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="header">
+        <h1>🗳️ Pequenos Cidadãos</h1>
+        <p>Aprendendo democracia através da participação</p>
+    </header>
+    <main class="urna">
+        <section class="screen-container">
+            <div class="screen" id="screen"><!-- CONTEÚDO GERADO PELO JAVASCRIPT --></div>
+        </section>
+        <section class="keyboard">
+            <div class="keyboard-title">
+                URNA ELETRÔNICA EDUCATIVA
+            </div>
+            <div class="number-display" id="display">
+                -
+            </div>
+            <div class="keys">
+                <button class="key" onclick="pressNumber(1)">1</button>
+                <button class="key" onclick="pressNumber(2)">2</button>
+                <button class="key" onclick="pressNumber(3)">3</button>
+
+                <button class="key" onclick="pressNumber(4)">4</button>
+                <button class="key" onclick="pressNumber(5)">5</button>
+                <button class="key" onclick="pressNumber(6)">6</button>
+
+                <button class="key" onclick="pressNumber(7)">7</button>
+                <button class="key" onclick="pressNumber(8)">8</button>
+                <button class="key" onclick="pressNumber(9)">9</button>
+
+                <button class="key blank" onclick="blankVote()">
+                    BRANCO
+                </button>
+
+                <button class="key" onclick="pressNumber(0)">0</button>
+
+                <button class="key correct" onclick="correctVote()">
+                    CORRIGE
+                </button>
+
+                <button class="key confirm" onclick="confirmVote()">
+                    CONFIRMA
+                </button>
+            </div>
+            <div class="accessibility">
+                🔊 Acessibilidade
+                <button
+                    class="audio-button"
+                    onclick="speakScreen()">
+                    Ouvir instruções
+                </button>
+            </div>
+        </section>
+    </main>
+    <footer class="footer">
+        Educação Infantil • Cidadania • Participação • Respeito
+    </footer>
+</div>
+<script>
+    // Mesma origem do backend.
+    const API_URL = "";
+
+    const EMOJIS = ["🦁", "🐼", "🐱", "🐶", "🐰", "🦊", "🐸", "🐵", "🐯"];
+    const MAX_CANDIDATES = 9;
+
+    let token = sessionStorage.getItem("token");
+    let currentUser = null;
+    let election = null;
+    let candidates = [];
+
+    let selectedNumber = "";
+    let selectedCandidate = null;
+    let submitting = false;
+
+    const screen = document.getElementById("screen");
+    const display = document.getElementById("display");
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+    function isStudent() {
+        return currentUser && currentUser.role === "aluno";
+    }
+    function canVote() {
+        return isStudent() && election && candidates.length > 0;
+    }
+    function mapCandidates(list) {
+        return list.slice(0, MAX_CANDIDATES).map((c, index) => ({
+            id: c.id,
+            number: index + 1,
+            name: c.name,
+            emoji: EMOJIS[index % EMOJIS.length]
+        }));
+    }
+    async function api(path, options = {}) {
+        const headers = Object.assign({}, options.headers || {});
+
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        let response;
+        try {
+            response = await fetch(API_URL + path, Object.assign({}, options, { headers }));
+        } catch (networkError) {
+            const error = new Error("Não foi possível conectar ao servidor.");
+            error.status = 0;
+            throw error;
+        }
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch (e) { }
+
+        if (!response.ok) {
+            const detail = data && data.detail;
+            const error = new Error(
+                typeof detail === "string" ? detail : "Erro ao comunicar com o servidor."
+            );
+            error.status = response.status;
+
+            if (response.status === 401 && token) {
+                clearSession();
+            }
+
+            throw error;
+        }
+        return data;
+    }
+    function clearSession() {
+        token = null;
+        currentUser = null;
+        election = null;
+        candidates = [];
+        selectedNumber = "";
+        selectedCandidate = null;
+        sessionStorage.removeItem("token");
+        display.textContent = "-";
+    }
+    function logout() {
+        clearSession();
+        showLogin();
+    }
+    function showLogin(message) {
+        screen.innerHTML = `
+            <div class="welcome-icon">🗳️</div>
+
+            <h2>Identifique-se</h2>
+
+            <p class="${message ? "login-error" : ""}">
+                ${message
+                    ? escapeHtml(message)
+                    : "Entre com seu usuário e senha para participar."}
+            </p>
+
+            <input
+                class="login-input"
+                id="login-user"
+                type="text"
+                placeholder="Usuário"
+                autocomplete="username"
+						>
+
+            <input
+                class="login-input"
+                id="login-pass"
+                type="password"
+                placeholder="Senha"
+                autocomplete="current-password"
+						>
+
+            <button
+                class="start-button"
+                onclick="doLogin()"
+						>Entrar
+            </button>
+        `;
+        const userInput = document.getElementById("login-user");
+        if (userInput) {
+            userInput.focus();
+        }
+    }
+    async function doLogin() {
+        const username = document.getElementById("login-user").value.trim();
+        const password = document.getElementById("login-pass").value;
+
+        if (!username || !password) {
+            showLogin("Preencha usuário e senha.");
+            return;
+        }
+
+        try {
+            const data = await api("/auth/login", {
+                method: "POST",
+                body: new URLSearchParams({ username, password })
+            });
+            token = data.access_token;
+            sessionStorage.setItem("token", token);
+
+            currentUser = await api("/auth/me");
+
+            await afterLogin();
+        } catch (error) {
+            clearSession();
+            showLogin(error.message);
+        }
+    }
+    async function afterLogin() {
+        if (isStudent()) {
+            showWelcome();
+        } else {
+            await showResults();
+        }
+    }
+    function showError(error) {
+        if (error.status === 401) {
+            showLogin("Sua sessão expirou. Entre novamente.");
+            return;
+        }
+
+        screen.innerHTML = `
+            <div style="font-size:70px"> ❗ </div>
+            <h2>Ops!</h2>
+            <p>${escapeHtml(error.message)}</p>
+            <div class="actions">
+                <button
+                    class="action-button back"
+                    onclick="logout()"
+								>
+                    Sair
+                </button>
+
+                <button
+                    class="action-button confirm"
+                    onclick="${isStudent() ? "startVoting()" : "showResults()"}"
+								>
+                    Tentar novamente
+                </button>
+            </div>
+        `;
+    }
+    function showWelcome() {
+        screen.innerHTML = `
+            <div class="welcome-icon">🗳️</div>
+            <h2>Vamos votar?</h2>
+            <p>
+                Escolha uma opção e participe
+                dessa experiência de democracia.
+            </p>
+            <button
+                class="start-button"
+                onclick="startVoting()"
+						>
+                Começar
+            </button>
+        `;
+    }
+    async function startVoting() {
+        selectedNumber = "";
+        selectedCandidate = null;
+
+        display.textContent = "-";
+
+        try {
+            const elections = await api("/elections/");
+
+            election = elections.find(e => e.status === "aberta") || null;
+
+            if (!election) {
+                throw new Error("Não há nenhuma votação aberta no momento.");
+            }
+
+            const list = await api("/candidates/");
+
+            candidates = mapCandidates(list);
+
+            showCandidates();
+        } catch (error) {
+            election = null;
+            candidates = [];
+            showError(error);
+        }
+    }
+    function showCandidates() {
+        screen.innerHTML = `
+            <h2>Escolha uma opção</h2>
+            <p> Clique em uma opção ou use o teclado. </p>
+            <div class="candidates">
+                ${candidates.map(candidate => `
+                    <div
+                        class="candidate"
+                        id="candidate-${candidate.number}"
+                        onclick="selectCandidate(${candidate.number})">
+
+                        <div class="animal">
+                            ${candidate.emoji}
+                        </div>
+
+                        <div class="candidate-name">
+                            ${escapeHtml(candidate.name)}
+                        </div>
+
+                        <span class="number">
+                            ${candidate.number}
+                        </span>
+                    </div>
+                `).join("")}
+            </div>
+            <div class="actions">
+                <button
+                    class="action-button back"
+                    onclick="showWelcome()"
+								>
+                    Voltar
+                </button>
+            </div>
+        `;
+    }
+    function pressNumber(number) {
+        if (!canVote()) {
+            return;
+        }
+
+        if (selectedNumber.length >= 1) {
+            return;
+        }
+
+        selectedNumber = number.toString();
+
+        display.textContent = selectedNumber;
+
+        const candidate = candidates.find(
+            c => c.number === number
+        );
+
+        if (candidate) {
+            selectedCandidate = candidate;
+
+            highlightCandidate(number);
+
+            setTimeout(() => {
+                showConfirmation(candidate);
+            }, 300);
+        } else {
+            showInvalidVote();
+        }
+    }
+    function selectCandidate(number) {
+        const candidate = candidates.find(
+            c => c.number === number
+        );
+
+        if (!candidate) {
+            return;
+        }
+
+        selectedNumber = number.toString();
+
+        selectedCandidate = candidate;
+
+        display.textContent = number;
+
+        highlightCandidate(number);
+
+        setTimeout(() => {
+            showConfirmation(candidate);
+        }, 300);
+    }
+    function highlightCandidate(number) {
+        document
+            .querySelectorAll(".candidate")
+            .forEach(element => {
+                element.classList.remove("selected");
+            });
+
+        const element =
+            document.getElementById(`candidate-${number}`);
+
+        if (element) {
+            element.classList.add("selected");
+        }
+    }
+    function showConfirmation(candidate) {
+        screen.innerHTML = `
+            <div style="font-size:70px"> ${candidate.emoji} </div>
+
+            <h2>Você escolheu:</h2>
+            <p style="font-size:28px;font-weight:bold;"> ${escapeHtml(candidate.name)} </p>
+            <div class="number"> Número ${candidate.number} </div>
+
+            <div class="actions">
+                <button
+                    class="action-button back"
+                    onclick="correctVote()">
+                    Corrigir
+                </button>
+                <button
+                    class="action-button confirm"
+                    onclick="confirmVote()">
+                    ✓ Confirmar
+                </button>
+            </div>
+        `;
+    }
+    async function sendVote(candidateId) {
+        if (submitting || !election) {
+            return;
+        }
+
+        submitting = true;
+
+        try {
+
+            const params = new URLSearchParams({ election_id: election.id });
+
+            if (candidateId !== null) {
+                params.set("candidate_id", candidateId);
+            }
+
+            await api(`/votes/submit?${params.toString()}`, {
+                method: "POST"
+            });
+
+            showSuccess();
+
+        } catch (error) {
+            showError(error);
+        } finally {
+            submitting = false;
+        }
+
+    }
+    function confirmVote() {
+        if (!canVote()) {
+            return;
+        }
+
+        if (!selectedNumber) {
+            alert("Escolha uma opção primeiro!");
+            return;
+        }
+
+        if (selectedNumber === "BRANCO") {
+            confirmBlank();
+            return;
+        }
+
+        if (!selectedCandidate) {
+            return;
+        }
+        sendVote(selectedCandidate.id);
+    }
+    function blankVote() {
+
+        if (!canVote()) {
+            return;
+        }
+
+        selectedNumber = "BRANCO";
+        selectedCandidate = null;
+
+        display.textContent = "BR";
+
+        screen.innerHTML = `
+            <div style="font-size:70px"> ⚪ </div>
+            <h2>Voto em branco</h2>
+            <p> Você escolheu não selecionar nenhuma opção. </p>
+            <div class="actions">
+                <button
+                    class="action-button back"
+                    onclick="correctVote()">
+                    Corrigir
+                </button>
+                <button
+                    class="action-button confirm"
+                    onclick="confirmBlank()">
+                    ✓ Confirmar
+                </button>
+            </div>
+        `;
+    }
+    function confirmBlank() {
+        if (!canVote()) {
+            return;
+        }
+        sendVote(null);
+    }
+    function correctVote() {
+
+        if (!canVote()) {
+            return;
+        }
+
+        selectedNumber = "";
+        selectedCandidate = null;
+        display.textContent = "-";
+        showCandidates();
+    }
+    function showInvalidVote() {
+        screen.innerHTML = `
+            <div style="font-size:70px">
+                ❗
+            </div>
+            <h2>Ops!</h2>
+            <p>
+                Essa opção não está disponível.
+                Vamos tentar novamente?
+            </p>
+            <div class="actions">
+                <button
+                    class="action-button confirm"
+                    onclick="correctVote()">
+                    Tentar novamente
+                </button>
+            </div>
+        `;
+    }
+    function showSuccess() {
+        selectedNumber = "";
+        selectedCandidate = null;
+        display.textContent = "-";
+
+        screen.innerHTML = `
+            <div class="success"> ✓ </div>
+
+            <h2>Voto registrado!</h2>
+            <p> Obrigado por participar. </p>
+            <p>
+                Sua escolha foi registrada
+                nesta atividade educativa.
+            </p>
+
+            <button
+                class="start-button"
+                onclick="logout()">
+                Concluir
+            </button>
+        `;
+    }
+    async function showResults() {
+        try {
+            const elections = await api("/elections/");
+
+            if (elections.length === 0) {
+                throw new Error("Nenhuma eleição foi criada ainda.");
+            }
+
+            // Prefere a eleição aberta; senão, a mais recente
+            const current =
+                elections.find(e => e.status === "aberta") ||
+                elections[elections.length - 1];
+
+            const [data, list] = await Promise.all([
+                api(`/votes/results/${current.id}`),
+                api("/candidates/")
+            ]);
+
+            // A apuração só traz candidatos que receberam voto,
+            // então cruzamos com a lista completa para mostrar os zerados.
+            const countByName = {};
+            data.results.forEach(r => {
+                countByName[r.name] = r.total_votos;
+            });
+
+            const rows = mapCandidates(list).map(candidate => ({
+                emoji: candidate.emoji,
+                name: candidate.name,
+                value: countByName[candidate.name] || 0
+            }));
+
+            // Brancos: só aparecem se o backend informar o campo "branco"
+            const blank = data.branco || 0;
+
+            const total =
+                rows.reduce((sum, row) => sum + row.value, 0) + blank;
+
+            const percentOf = value =>
+                total > 0 ? (value / total) * 100 : 0;
+
+            screen.innerHTML = `
+                <h2>Resultado da votação</h2>
+                <p>
+                    Vamos descobrir como ficou a escolha da turma!
+                </p>
+                <div class="result">
+                    ${rows.map(row => `
+                        <div class="result-item">
+                            <div class="result-header">
+                                <span>
+                                    ${row.emoji}
+                                    ${escapeHtml(row.name)}
+                                </span>
+                                <span>
+                                    ${row.value} voto(s)
+                                </span>
+                            </div>
+                            <div class="bar">
+                                <div
+                                    class="bar-fill"
+                                    style="width:${percentOf(row.value)}%">
+                                </div>
+                            </div>
+                        </div>
+                    `).join("")}
+
+                    <div class="result-item">
+                        <div class="result-header">
+                            <span>⚪ Branco</span>
+                            <span>
+                                ${blank} voto(s)
+                            </span>
+                        </div>
+                        <div class="bar">
+                            <div
+                                class="bar-fill"
+                                style="width:${percentOf(blank)}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button
+                        class="action-button back"
+                        onclick="logout()">
+                        Sair
+                    </button>
+                    <button
+                        class="action-button confirm"
+                        onclick="showResults()">
+                        Atualizar
+                    </button>
+                </div>
+            `;
+
+        } catch (error) {
+            showError(error);
+        }
+    }
+    function speakScreen() {
+        if (!("speechSynthesis" in window)) {
+            alert( "O navegador não oferece suporte ao áudio.");
+            return;
+        }
+
+        const text =
+            screen.innerText
+            || "Escolha uma opção para votar.";
+
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.lang = "pt-BR";
+        speech.rate = 0.9;
+        speech.pitch = 1.1;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(speech);
+    }
+    document.addEventListener("keydown", function(event) {
+        if (event.target.tagName === "INPUT") {
+            if (event.key === "Enter") {
+                doLogin();
+            }
+            return;
+        }
+
+        if (
+            event.key >= "0" &&
+            event.key <= "9"
+        ) {
+            pressNumber(
+                parseInt(event.key)
+            );
+        }
+        if (event.key === "Enter") {
+            confirmVote();
+        }
+        if (event.key === "Escape") {
+            correctVote();
+        }
+    });
+    async function init() {
+        if (!token) {
+            showLogin();
+            return;
+        }
+
+        try {
+            currentUser = await api("/auth/me");
+            await afterLogin();
+        } catch (error) {
+            clearSession();
+            showLogin();
+        }
+    }
+		document.addEventListener("DOMContentLoaded", () => {
+    	init();
+		});
+</script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pequenos Cidadãos | Jornada da Democracia</title>
+<style>
+:root{
+  --blue:#1557a6; --blue2:#2f80d8; --sky:#eaf5ff;
+  --green:#16a765; --green2:#dff8eb; --orange:#f29b38;
+  --red:#e85b5b; --purple:#7856c8; --ink:#18324d;
+  --muted:#66809a; --white:#fff; --line:#dce8f2;
+  --shadow:0 18px 45px rgba(22,72,115,.14);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);
+ background:linear-gradient(135deg,#edf8ff 0%,#fffaf0 100%);min-height:100vh}
+button{font:inherit}
+.app{max-width:1200px;margin:auto;padding:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:52px;height:52px;border-radius:16px;background:var(--blue);display:grid;place-items:center;color:white;font-size:27px;box-shadow:var(--shadow)}
+.brand h1{margin:0;color:var(--blue);font-size:25px}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:14px}
+.progress-wrap{background:white;border:1px solid var(--line);padding:10px 14px;border-radius:16px;min-width:230px}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+.progress{height:8px;background:#e8eef4;border-radius:20px;overflow:hidden}
+.progress > div{height:100%;background:var(--blue2);border-radius:20px;transition:.35s}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:20px}
+.nav{background:white;border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:var(--shadow);height:max-content}
+.nav h3{margin:4px 8px 12px;font-size:15px;color:var(--muted)}
+.step{display:flex;align-items:center;gap:11px;width:100%;border:0;background:transparent;text-align:left;padding:12px 10px;border-radius:14px;color:var(--ink);cursor:pointer}
+.step:hover{background:#f2f8fd}
+.step.active{background:#eaf4ff;color:var(--blue);font-weight:700}
+.step.done .num{background:var(--green)}
+.num{width:30px;height:30px;border-radius:50%;background:#dfeaf4;display:grid;place-items:center;font-size:13px;flex:none}
+.step small{display:block;color:var(--muted);font-weight:400;margin-top:2px}
+.content{min-width:0}
+.card{background:white;border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:30px;min-height:620px}
+.hero{text-align:center;max-width:800px;margin:auto}
+.hero .emoji{font-size:80px;margin:8px 0}
+h2{font-size:34px;color:var(--blue);margin:8px 0 12px}
+.lead{font-size:18px;line-height:1.55;color:#567087;max-width:680px;margin:0 auto 25px}
+.btn{border:0;border-radius:14px;padding:14px 22px;font-weight:800;cursor:pointer;transition:.18s}
+.btn:hover{transform:translateY(-1px)}
+.primary{background:var(--green);color:#fff}.secondary{background:#edf3f8;color:var(--ink)}
+.blue{background:var(--blue);color:#fff}
+.orange{background:var(--orange);color:#fff}.danger{background:var(--red);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}
+.mini{padding:18px;border:1px solid var(--line);border-radius:18px;background:#fbfdff;text-align:left}
+.mini .ico{font-size:32px}.mini h4{margin:8px 0 5px}.mini p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+.choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:24px auto;max-width:760px}
+.choice{border:3px solid #e1eaf1;background:#fff;border-radius:20px;padding:18px;cursor:pointer}
+.choice:hover{border-color:#8bbbe7}.choice.selected{border-color:var(--green);background:var(--green2)}
+.choice .big{font-size:54px}.choice strong{display:block;font-size:18px;margin-top:6px}
+.urna-area{display:grid;grid-template-columns:1fr 320px;gap:22px;align-items:stretch}
+.urna-screen{border:10px solid #d8e1e8;background:#fff;border-radius:20px;padding:25px;min-height:500px}
+.urna-shell{background:#202936;border-radius:25px;padding:22px;color:white}
+.urna-shell h3{text-align:center;margin:0 0 15px;font-size:15px}
+.display{height:58px;background:white;color:#172331;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;margin-bottom:16px}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.key{border:0;border-radius:9px;min-height:54px;background:#f6f8fa;color:#202936;font-weight:800;font-size:20px;cursor:pointer}
+.key:hover{background:#dfe8ef}.key.blank{font-size:11px}.key.correct{background:var(--orange);color:white;font-size:11px}.key.confirm{background:var(--green);color:white;font-size:11px}
+.access{margin-top:14px;padding:12px;background:#334253;border-radius:12px;text-align:center;font-size:12px}.access button{margin-top:7px;width:100%;border:0;padding:10px;border-radius:8px;background:var(--blue2);color:white;cursor:pointer;font-weight:700}
+.candidate-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:700px;margin:18px auto}
+.candidate{border:2px solid var(--line);border-radius:16px;padding:13px;background:#fff;cursor:pointer}.candidate.selected{border-color:var(--green);background:var(--green2)}
+.candidate .animal{font-size:45px}.candidate b{display:block;font-size:17px;margin:4px}.badge{display:inline-block;background:var(--blue);color:#fff;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:800}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:20px}
+.result{max-width:720px;margin:20px auto;text-align:left}.result-line{margin:13px 0}.result-head{display:flex;justify-content:space-between;font-weight:700;margin-bottom:5px}.bar{height:23px;background:#e8eef3;border-radius:20px;overflow:hidden}.fill{height:100%;background:var(--blue2);border-radius:20px;transition:1s}
+.reflection{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;max-width:750px;margin:25px auto}.reflection button{padding:20px;border:2px solid var(--line);background:#fff;border-radius:18px;cursor:pointer;text-align:left}.reflection button:hover{border-color:var(--blue2)}
+.message{margin:18px auto;padding:14px 18px;border-radius:14px;background:#eef8ff;max-width:700px;color:#31536e}
+.hidden{display:none!important}
+.login-input{display:block;width:100%;max-width:320px;margin:0 auto 12px;padding:14px;font-size:18px;border:2px solid var(--line);border-radius:14px;color:var(--ink)}
+.login-input:focus{outline:none;border-color:var(--blue2)}
+.message.error{background:#fdeeee;color:#a63b3b}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.nav{display:flex;overflow:auto;gap:4px}.nav h3{display:none}.step{min-width:175px}.urna-area{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.choice-grid{grid-template-columns:1fr}.card{padding:20px}}
+@media(max-width:520px){.app{padding:10px}.topbar{align-items:flex-start}.progress-wrap{min-width:150px}.brand h1{font-size:20px}.brand p{display:none}h2{font-size:28px}.candidate-row{grid-template-columns:1fr}.card{min-height:650px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">🗳️</div>
+      <div><h1>Pequenos Cidadãos</h1><p>Jornada interativa de aprendizagem sobre democracia</p></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="progressText">Etapa 1 de 6</span><span id="progressPct">17%</span></div>
+      <div class="progress"><div id="progressBar" style="width:17%"></div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="nav">
+      <h3>Jornada</h3>
+      <button class="step active" data-step="1" onclick="go(1)"><span class="num">1</span><span>O que é democracia?<small>Aprender</small></span></button>
+      <button class="step" data-step="2" onclick="go(2)"><span class="num">2</span><span>Escolhas coletivas<small>Participar</small></span></button>
+      <button class="step" data-step="3" onclick="go(3)"><span class="num">3</span><span>Conheça a urna<small>Explorar</small></span></button>
+      <button class="step" data-step="4" onclick="go(4)"><span class="num">4</span><span>Hora de votar<small>Escolher</small></span></button>
+      <button class="step" data-step="5" onclick="go(5)"><span class="num">5</span><span>Resultado<small>Descobrir</small></span></button>
+      <button class="step" data-step="6" onclick="go(6)"><span class="num">6</span><span>Reflexão<small>Conversar</small></span></button>
+    </aside>
+
+    <main class="content">
+      <section class="card" id="app"></section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Mesma origem do backend.
+const API_URL = "";
+
+// A API não guarda emoji nem número de urna, então são atribuídos
+// pela ordem em que os candidatos chegam (máximo de 9, pelas teclas 1-9).
+const EMOJIS = ["🦁","🐼","🐱","🐶","🐰","🦊","🐸","🐵","🐯"];
+const MAX_CANDIDATES = 9;
+
+let token = sessionStorage.getItem("token");
+let currentUser = null;
+let election = null;
+let candidates = [];
+let submitting = false;
+
+let step=1, selected=null;
+const app=document.getElementById("app");
+
+function esc(v) {
+  return String(v)
+		.replace(/&/g,"&amp;")
+		.replace(/</g,"&lt;")
+		.replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+		.replace(/'/g,"&#39;");
+}
+function isStudent(){ return currentUser && currentUser.role==="aluno"; }
+function mapCandidates(list) {
+  return list.slice(0,MAX_CANDIDATES).map((c,i)=>({
+    id:c.id, n:i+1, name:c.name, emoji:EMOJIS[i%EMOJIS.length]
+  }));
+}
+async function api(path, options={}) {
+  const headers=Object.assign({}, options.headers||{});
+  if(token) headers["Authorization"]=`Bearer ${token}`;
+
+  let response;
+  try{
+    response=await fetch(API_URL+path, Object.assign({}, options, {headers}));
+  }catch(e){
+    const err=new Error("Não foi possível conectar ao servidor.");
+    err.status=0; throw err;
+  }
+
+  let data=null;
+  try{ data=await response.json(); }catch(e){}
+
+  if(!response.ok){
+    const detail=data && data.detail;
+    const err=new Error(typeof detail==="string" ? detail : "Erro ao comunicar com o servidor.");
+    err.status=response.status;
+    // Token expirado ou inválido
+    if(response.status===401 && token) clearSession();
+    throw err;
+  }
+  return data;
+}
+function clearSession() {
+  token=null; currentUser=null; election=null; candidates=[]; selected=null;
+  sessionStorage.removeItem("token");
+}
+function logout() {
+  clearSession();
+  step=1;
+  render();
+}
+function renderLogin(message) {
+  app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">🗳️</div>
+      <h2>Identifique-se</h2>
+      <p class="lead">Entre com seu usuário e senha para começar a jornada.</p>
+      ${message?`<div class="message error">${esc(message)}</div>`:""}
+      <input class="login-input" id="loginUser" type="text" placeholder="Usuário"
+             autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+      <input class="login-input" id="loginPass" type="password" placeholder="Senha"
+             autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="actions"><button class="btn primary" onclick="doLogin()">Entrar</button></div>
+    </div>`;
+  const u=document.getElementById("loginUser");
+  if(u) u.focus();
+}
+async function doLogin() {
+  const username=document.getElementById("loginUser").value.trim();
+  const password=document.getElementById("loginPass").value;
+  if(!username || !password){ renderLogin("Preencha usuário e senha."); return; }
+
+  try{
+    const data=await api("/auth/login",{
+      method:"POST",
+      body:new URLSearchParams({username,password})
+    });
+    token=data.access_token;
+    sessionStorage.setItem("token",token);
+    currentUser=await api("/auth/me");
+    go(1);
+  }catch(err){
+    clearSession();
+    renderLogin(err.message);
+  }
+}
+function showError(err, retry) {
+  if(err.status===401){ renderLogin("Sua sessão expirou. Entre novamente."); return; }
+  app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">❗</div>
+      <h2>Ops!</h2>
+      <p class="lead">${esc(err.message)}</p>
+      <div class="actions">
+        <button class="btn secondary" onclick="logout()">Sair</button>
+        <button class="btn primary" onclick="${retry}">Tentar novamente</button>
+      </div>
+    </div>`;
+}
+function updateProgress() {
+  const pct=Math.round(step/6*100);
+  document.getElementById("progressText").textContent=`Etapa ${step} de 6`;
+  document.getElementById("progressPct").textContent=`${pct}%`;
+  document.getElementById("progressBar").style.width=pct+"%";
+  document.querySelectorAll(".step").forEach((x,i)=>{
+    x.classList.toggle("active",i+1===step);
+    x.classList.toggle("done",i+1<step);
+  });
+}
+function go(n){step=n; updateProgress(); render(); window.scrollTo({top:0,behavior:"smooth"});}
+function navBtn(label,next,cls="primary"){return `<button class="btn ${cls}" onclick="go(${next})">${label}</button>`;}
+function render() {
+  updateProgress();
+
+  if(!currentUser){ renderLogin(); return; }
+
+  if(step===1) app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">👧🏽🧒🏻🗳️</div>
+      <h2>Democracia começa com participação!</h2>
+      <p class="lead">Nesta jornada, a turma vai aprender que democracia envolve conversar, ouvir diferentes ideias, fazer escolhas e respeitar as decisões coletivas.</p>
+      <div class="cards">
+        <div class="mini"><div class="ico">💬</div><h4>Opinar</h4><p>Expressar ideias e explicar o que pensamos.</p></div>
+        <div class="mini"><div class="ico">👂</div><h4>Ouvir</h4><p>Conhecer e respeitar opiniões diferentes.</p></div>
+        <div class="mini"><div class="ico">🤝</div><h4>Participar</h4><p>Construir escolhas junto com outras pessoas.</p></div>
+      </div>
+      <div class="message">🌱 <b>Desafio da turma:</b> vamos aprender democracia vivendo uma pequena experiência de votação?</div>
+      ${navBtn("Começar jornada →",2)}
+    </div>`;
+
+  if(step===2) app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">🌳📚⚽</div>
+      <h2>Vamos escolher juntos?</h2>
+      <p class="lead">Imagine que a escola ganhou um espaço novo. Qual atividade a turma gostaria de escolher para esse espaço?</p>
+      <div class="choice-grid">
+        <button class="choice" onclick="chooseIdea(this,'🌳 Parquinho')"><div class="big">🌳</div><strong>Parquinho</strong><small>Um espaço para brincar.</small></button>
+        <button class="choice" onclick="chooseIdea(this,'📚 Biblioteca')"><div class="big">📚</div><strong>Biblioteca</strong><small>Um espaço para ler.</small></button>
+        <button class="choice" onclick="chooseIdea(this,'⚽ Quadra')"><div class="big">⚽</div><strong>Quadra</strong><small>Um espaço para jogar.</small></button>
+      </div>
+      <div id="ideaMsg" class="message">Escolha uma opção para continuar.</div>
+      <div class="actions"><button class="btn primary" onclick="go(3)">Conhecer a urna →</button></div>
+    </div>`;
+
+  if(step===3) app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">🗳️</div>
+      <h2>Conheça a urna eletrônica</h2>
+      <p class="lead">A urna desta atividade é uma simulação educativa. Ela apresenta opções, recebe uma escolha e mostra uma confirmação antes de registrar o voto.</p>
+    </div>
+    <div class="urna-area">
+      <div class="urna-screen">
+        <h2 style="font-size:27px">Como funciona?</h2>
+        <div class="cards">
+          <div class="mini"><div class="ico">1️⃣</div><h4>Escolha</h4><p>Observe as opções apresentadas.</p></div>
+          <div class="mini"><div class="ico">2️⃣</div><h4>Confirme</h4><p>Confira sua escolha antes de confirmar.</p></div>
+          <div class="mini"><div class="ico">3️⃣</div><h4>Registre</h4><p>O sistema registra a participação.</p></div>
+        </div>
+        <div class="message">🔊 Use o botão de áudio para ouvir as instruções. A interface também pode ser usada por teclado.</div>
+      </div>
+      <div class="urna-shell">
+        <h3>URNA EDUCATIVA</h3>
+        <div class="display">--</div>
+        <div class="keys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key">${n}</button>`).join("")}<button class="key blank">BRANCO</button><button class="key">0</button><button class="key correct">CORRIGE</button><button class="key confirm">CONFIRMA</button></div>
+        <div class="access">🔊 Acessibilidade<br><button onclick="speak('Esta é uma urna eletrônica educativa. Escolha uma opção e confirme seu voto.')">Ouvir instruções</button></div>
+      </div>
+    </div>
+    <div class="actions">${navBtn("Vamos votar! →",4)}</div>`;
+
+  if(step===4) startVoting();
+  if(step===5) renderResults();
+  if(step===6) app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">💬❤️🌎</div>
+      <h2>O que aprendemos?</h2>
+      <p class="lead">A votação termina aqui, mas a conversa continua. Escolha uma pergunta para conversar com a turma.</p>
+      <div class="reflection">
+        <button onclick="reflect('Por que é importante ouvir a opinião de outras pessoas?')">👂 <b>Ouvir</b><br><small>Por que devemos ouvir opiniões diferentes?</small></button>
+        <button onclick="reflect('Como podemos respeitar uma escolha diferente da nossa?')">🤝 <b>Respeitar</b><br><small>Como agir quando alguém escolhe diferente?</small></button>
+        <button onclick="reflect('O que significa participar de uma decisão coletiva?')">🙋 <b>Participar</b><br><small>O que significa participar?</small></button>
+        <button onclick="reflect('Por que todos devem ter oportunidade de participar?')">🌎 <b>Incluir</b><br><small>Por que a participação de todos importa?</small></button>
+      </div>
+      <div id="reflectionMsg" class="message">Escolha uma pergunta para iniciar a conversa.</div>
+      <div class="actions">
+        <button class="btn secondary" onclick="logout()">Sair</button>
+        <button class="btn blue" onclick="go(1)">↻ Reiniciar jornada</button>
+      </div>
+    </div>`;
+}
+function chooseIdea(el,text){
+  document.querySelectorAll(".choice").forEach(x=>x.classList.remove("selected"));
+  el.classList.add("selected");
+  document.getElementById("ideaMsg").innerHTML=`💡 Você escolheu <b>${text}</b>. Em uma decisão democrática, outras pessoas também podem escolher opções diferentes.`;
+}
+async function startVoting(){
+  selected=null;
+
+  if(!isStudent()){
+    app.innerHTML=`
+      <div class="hero">
+        <h2>🗳️ Hora de votar!</h2>
+        <p class="lead">Nesta atividade, os alunos votam individualmente. O professor acompanha a apuração.</p>
+        <div class="actions">${navBtn("Ver resultado →",5)}</div>
+      </div>`;
+    return;
+  }
+
+  try{
+    const elections=await api("/elections/");
+    if(step!==4) return;
+    election=elections.find(e=>e.status==="aberta")||null;
+    if(!election) throw new Error("Não há nenhuma votação aberta no momento.");
+
+    const list=await api("/candidates/");
+    if(step!==4) return;
+    candidates=mapCandidates(list);
+
+    renderVoting();
+  }catch(err){
+    if(step!==4) return;
+    election=null; candidates=[];
+    showError(err,"go(4)");
+  }
+}
+function renderVoting(){
+  app.innerHTML=`
+  <div class="hero">
+    <h2>🗳️ Hora de votar!</h2>
+    <p class="lead">Escolha um personagem, confira sua opção e depois confirme. Nesta atividade, todos participam individualmente.</p>
+  </div>
+  <div class="urna-area">
+    <div class="urna-screen" id="voteScreen">
+      <h2 style="font-size:26px">Escolha sua opção</h2>
+      <p>Você pode clicar em uma opção ou usar o teclado numérico.</p>
+      <div class="candidate-row">${candidates.map(c=>`
+        <button class="candidate ${selected===c.n?'selected':''}" onclick="selectCandidate(${c.n})">
+          <div class="animal">${c.emoji}</div><b>${esc(c.name)}</b><span class="badge">${c.n}</span>
+        </button>`).join("")}</div>
+      <div class="actions">
+        <button class="btn secondary" onclick="blankVote()">Voto em branco</button>
+        <button class="btn primary" onclick="confirmVote()">✓ Confirmar</button>
+      </div>
+      <div id="voteMsg" class="message">Nenhuma opção selecionada.</div>
+    </div>
+    <div class="urna-shell">
+      <h3>URNA EDUCATIVA</h3>
+      <div class="display" id="display">${selected ?? "--"}</div>
+      <div class="keys">
+        ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" onclick="selectCandidate(${n})">${n}</button>`).join("")}
+        <button class="key blank" onclick="blankVote()">BRANCO</button>
+        <button class="key" onclick="selectCandidate(0)">0</button>
+        <button class="key correct" onclick="clearVote()">CORRIGE</button>
+        <button class="key confirm" onclick="confirmVote()">CONFIRMA</button>
+      </div>
+      <div class="access">🔊 Acessibilidade<br><button onclick="speak('Escolha uma opção. Depois confira e confirme seu voto.')">Ouvir instruções</button></div>
+    </div>
+  </div>`;
+}
+function selectCandidate(n){
+  const c=candidates.find(x=>x.n===n);
+  if(!c){ document.getElementById("voteMsg").innerHTML="❗ Esta opção não está disponível nesta atividade."; return; }
+  selected=n; renderVoting();
+  document.getElementById("voteMsg").innerHTML=`Você escolheu <b>${c.emoji} ${esc(c.name)}</b>. Confira e clique em confirmar.`;
+}
+function blankVote(){selected="branco";renderVoting();document.getElementById("voteMsg").innerHTML="⚪ Você escolheu <b>voto em branco</b>. Confira e clique em confirmar."}
+function clearVote(){selected=null;renderVoting()}
+async function confirmVote(){
+  if(selected===null){alert("Escolha uma opção antes de confirmar.");return}
+  if(submitting || !election) return;
+
+  submitting=true;
+  try{
+    const params=new URLSearchParams({election_id:election.id});
+
+    // Voto em branco = sem candidate_id
+    if(selected!=="branco"){
+      const c=candidates.find(x=>x.n===selected);
+      if(!c) return;
+      params.set("candidate_id",c.id);
+    }
+
+    await api(`/votes/submit?${params.toString()}`,{method:"POST"});
+
+    selected=null;
+    go(5);
+  }catch(err){
+    if(err.status===401){ renderLogin("Sua sessão expirou. Entre novamente."); return; }
+    const msg=document.getElementById("voteMsg");
+    if(msg) msg.innerHTML=`❗ ${esc(err.message)}`;
+  }finally{
+    submitting=false;
+  }
+}
+async function renderResults(){
+  if(isStudent()){
+    app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">📊🎉</div>
+      <h2>Resultado da atividade</h2>
+      <p class="lead">A apuração será apresentada pelo professor. Cada participante teve direito a fazer sua própria escolha.</p>
+    </div>
+    <div class="message">💡 <b>Importante:</b> o objetivo desta experiência é aprender sobre participação, escolha e respeito. O resultado não determina que uma opinião seja melhor que outra.</div>
+    <div class="actions">${navBtn("Continuar para reflexão →",6)}</div>`;
+    return;
+  }
+
+  try{
+    const elections=await api("/elections/");
+    if(step!==5) return;
+    if(elections.length===0) throw new Error("Nenhuma eleição foi criada ainda.");
+
+    const current=elections.find(e=>e.status==="aberta") || elections[elections.length-1];
+
+    const [data,list]=await Promise.all([
+      api(`/votes/results/${current.id}`),
+      api("/candidates/")
+    ]);
+    if(step!==5) return;
+
+    const countByName={};
+    data.results.forEach(r=>{countByName[r.name]=r.total_votos;});
+
+    const rows=mapCandidates(list).map(c=>({emoji:c.emoji,name:c.name,v:countByName[c.name]||0}));
+
+    const blank=data.branco||0;
+    const total=rows.reduce((a,r)=>a+r.v,0)+blank;
+
+    app.innerHTML=`
+    <div class="hero">
+      <div class="emoji">📊🎉</div>
+      <h2>Resultado da atividade</h2>
+      <p class="lead">A turma pode observar a apuração e conversar sobre o resultado, lembrando que cada participante teve direito a fazer sua própria escolha.</p>
+    </div>
+    <div class="result">
+      ${rows.map(r=>{const p=total?r.v/total*100:0;return `<div class="result-line"><div class="result-head"><span>${r.emoji} ${esc(r.name)}</span><span>${r.v} voto(s)</span></div><div class="bar"><div class="fill" style="width:${p}%"></div></div></div>`}).join("")}
+      <div class="result-line"><div class="result-head"><span>⚪ Branco</span><span>${blank} voto(s)</span></div><div class="bar"><div class="fill" style="width:${total?blank/total*100:0}%"></div></div></div>
+    </div>
+    <div class="message">💡 <b>Importante:</b> o objetivo desta experiência é aprender sobre participação, escolha e respeito. O resultado não determina que uma opinião seja melhor que outra.</div>
+    <div class="actions">${navBtn("Continuar para reflexão →",6)}<button class="btn secondary" onclick="go(5)">Atualizar</button></div>`;
+
+  }catch(err){
+    if(step!==5) return;
+    showError(err,"go(5)");
+  }
+}
+function reflect(text){document.getElementById("reflectionMsg").innerHTML=`💬 <b>Vamos conversar:</b> ${text}`}
+function speak(text){
+  if("speechSynthesis" in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(text);u.lang="pt-BR";u.rate=.9;speechSynthesis.speak(u)}
+}
+async function init(){
+  if(!token){ render(); return; }
+
+  try{
+    currentUser=await api("/auth/me");
+  }catch(err){
+    clearSession();
+  }
+  render();
+}
+document.addEventListener("DOMContentLoaded", () => {
+	init();
+});
+init();
+</script>
+</body>
+</html>
